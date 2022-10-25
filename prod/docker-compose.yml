@@ -1,0 +1,57 @@
+version: "3"
+
+services:
+  postgres:
+    image: 'postgres:13.7'
+    container_name: postgres
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    environment:
+       POSTGRES_DB: keycloak
+       POSTGRES_USER: vikash
+       POSTGRES_PASSWORD: vikash
+    networks:
+      - service-network
+       
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    networks:
+      - service-network
+
+      
+  keycloak:
+    build: .
+    container_name: keycloak
+    environment:
+        KC_DB: keycloak
+        KC_DB_URL: 'jdbc:postgresql://postgres/keycloak'
+        KC_DB_USERNAME: vikash
+        KC_DB_PASSWORD: vikash
+        KC_DB_SCHEMA: public
+#Hostname Configuration
+        KC_HOSTNAME: "yourpublic.hostname.com"
+        KC_HOSTNAME_STRICT_HTTPS: 'true'
+        KEYCLOAK_USER: admin
+        KEYCLOAK_PASSWORD: admin
+        KEYCLOAK_ADMIN: admin
+        KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+        - postgres
+    networks:
+      - service-network
+      
+volumes:
+  keycloak-db-data:
+    driver: local
+    
+networks:
+  service-network:
